@@ -1,0 +1,7 @@
+DELETE FROM users WHERE id = '58652fbd-eb3a-46d7-a004-a26fb1358abf'
+DELETE FROM users WHERE id = '6d0ec75d-7233-44e5-9e70-b78d12709675'
+DELETE FROM users WHERE id = 'bc8e9d5b-3084-4fda-aee4-eab6ae4bfbf9'
+DELETE FROM users WHERE id = '209e5da6-e536-46f8-9dd2-9f9a5e244e32'
+DELETE FROM users WHERE id = 'a4921cc9-b40f-48b0-9c08-3171064fae1b'
+DELETE FROM users WHERE id = '05c7f7f7-0b98-4054-8d56-3d04f41dfead'
+

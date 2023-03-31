@@ -1,0 +1,1 @@
+SELECT * FROM users WHERE id = 'a3b43dba-ffc1-4446-a7de-f99944f1c463'
