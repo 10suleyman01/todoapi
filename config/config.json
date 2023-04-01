@@ -3,18 +3,18 @@
     "port": 5432,
     "database": "postgres",
     "username": "postgres",
-    "host": "localhost",
-    "password": "1234"
+    "host": "localhost", 
+    "password": "arion"
   },
   "server": {
-    "port": ":8080",
+    "port": ":8082",
     "host": "localhost"
   },
   "secret": {
     "salt": "w483de8475e634ca86c4d954c5w51"
   },
   "token": {
-    "expires_in": "30m",
+    "expires_in": "60m",
     "secret_key": "07d954c5w514bw483de8475e634ca86c475fa1e3faADQW2",
     "age": 60
   }

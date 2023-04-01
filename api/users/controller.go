@@ -2,13 +2,15 @@ package users
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"net/http"
 	"strings"
 	"todoproject/api/util"
+	"todoproject/apperror"
 	"todoproject/db"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -74,7 +76,7 @@ func (h *Handler) GetByNameAndPassword(ctx *gin.Context) {
 
 	var u User
 
-	err := ctx.BindJSON(&u)
+	err := ctx.ShouldBind(&u)
 	if err != nil {
 		return
 	}
@@ -83,6 +85,7 @@ func (h *Handler) GetByNameAndPassword(ctx *gin.Context) {
 
 	user, err := h.storage.GetByNameAndPassword(ctx, u.Name, u.Password)
 	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, apperror.NewJsonMessage("fail", "failed to get user by name and password"))
 		return
 	}
 	ctx.JSON(http.StatusOK, user)
@@ -101,6 +104,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 	}
 	if err := h.storage.Create(ctx, user); err != nil {
 		h.log.Errorf("failed to create users. due to error: %v. method = (Create)", err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, apperror.NewJsonMessage("fail", "failed to create user"))
 		return
 	}
 	user.CleanPassword()
@@ -151,7 +155,7 @@ func (h *Handler) SignIn(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, h.config.TokenMaxAge*60, "/", "localhost", false, true)
+	h.SetTokenCookie(ctx, token, true)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
@@ -188,13 +192,21 @@ func (h *Handler) IsLogin() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set("currentUser", user)
+		ctx.Set(util.CURRENT_USER, user)
 		ctx.Next()
 
 	}
 }
 
 func (h *Handler) Logout(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
+	h.SetTokenCookie(ctx, util.EmptyStr, false)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+func (h *Handler) SetTokenCookie(ctx *gin.Context, token string, isSignIn bool) {
+	if isSignIn {
+		ctx.SetCookie(util.Token, token, h.config.TokenMaxAge*60, util.HomePath, util.DOMAIN, false, true)
+	} else {
+		ctx.SetCookie(util.Token, util.EmptyStr, -1, util.HomePath, util.DOMAIN, false, true)
+	}
 }

@@ -3,23 +3,31 @@ package util
 import (
 	"crypto/sha1"
 	"fmt"
+	"time"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/spf13/viper"
-	"time"
 )
 
 // 6L6v6S6o5H
 // aB2pC0pZ6ceT
 
 const (
-	ApiV1 = "/api"
-	ApiV2 = "/api/v2"
+	ApiV1    = "/api"
+	ApiV2    = "/api/v2"
+	HomePath = "/"
+	EmptyStr = ""
 )
 
 const (
 	Postgres = "postgres"
 	Server   = "server"
 	Token    = "token"
+)
+
+const (
+	CURRENT_USER = "currentUser"
+	DOMAIN       = "sbashirov0.fvds.ru"
 )
 
 func ConfigPath(path, key string) string {

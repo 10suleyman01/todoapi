@@ -43,7 +43,7 @@ func (h *Handler) InitTodoHandler(e *gin.Engine) {
 }
 
 func (h *Handler) GetAll(ctx *gin.Context) {
-	user := ctx.MustGet("currentUser").(users.User)
+	user := GetCurrentUser(ctx)
 	todos, err := h.Storage.GetAllTodoByUserId(ctx, user.Id)
 	if err != nil {
 		h.Log.Errorf("failed to get todos. due to error: %v", err)
@@ -55,7 +55,7 @@ func (h *Handler) GetAll(ctx *gin.Context) {
 
 func (h *Handler) GetById(ctx *gin.Context) {
 	id := ctx.Param(Id)
-	user := ctx.MustGet("currentUser").(users.User)
+	user := GetCurrentUser(ctx)
 	todo, err := h.Storage.GetTodoById(ctx, id, user.Id)
 	if err != nil {
 		h.Log.Errorf("failed to get todo by id=(%s). due to error: %v", id, err)
@@ -75,7 +75,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	user := ctx.MustGet("currentUser").(users.User)
+	user := GetCurrentUser(ctx)
 	todo := Todo{
 		Title: todoDto.Title, UserId: user.Id,
 	}
@@ -96,7 +96,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	user := ctx.MustGet("currentUser").(users.User)
+	user := GetCurrentUser(ctx)
 
 	if user.Id != todo.Id {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, apperror.NewJsonMessage("fail", "failed to update"))
@@ -119,7 +119,7 @@ func (h *Handler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	user := ctx.MustGet("currentUser").(users.User)
+	user := GetCurrentUser(ctx)
 
 	if err := h.Storage.Delete(ctx, deleteDto.TodoId, user.Id); err != nil {
 		h.Log.Errorf("failed to delete todo. due to error: %v", err)
@@ -127,4 +127,8 @@ func (h *Handler) Delete(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusNoContent, apperror.NewJsonMessage("success", "deleted"))
+}
+
+func GetCurrentUser(ctx *gin.Context) users.User {
+	return ctx.MustGet(util.CURRENT_USER).(users.User)
 }

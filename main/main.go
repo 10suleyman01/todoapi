@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"log"
+	"runtime"
+	"strings"
+	"time"
 	"todoproject/api/todo"
 	"todoproject/api/users"
 	"todoproject/api/util"
 	"todoproject/db"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -35,6 +39,8 @@ func runApp() {
 		TokenMaxAge:  viper.GetInt(util.ConfigPath(util.Token, "age")),
 	}
 
+	fmt.Printf("Config: %v", config)
+
 	// Connect to Postgres
 	client, errConnect := db.NewClient(config)
 	if errConnect != nil {
@@ -44,18 +50,16 @@ func runApp() {
 
 	// Setup Gin
 	server := gin.Default()
+	server.Use(func(ctx *gin.Context) {
+		ctx.Header("Access-Control-Allow-Origin", "*")
+		ctx.Header("Access-Control-Allow-Credentials", "true")
+	})
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:           []string{"http://localhost"},
-		AllowOriginFunc:        nil,
-		AllowMethods:           nil,
-		AllowHeaders:           nil,
-		AllowCredentials:       false,
-		ExposeHeaders:          nil,
-		MaxAge:                 0,
-		AllowWildcard:          false,
-		AllowBrowserExtensions: false,
-		AllowWebSockets:        false,
-		AllowFiles:             false,
+		AllowOrigins:     []string{"http://149.154.65.144"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Authorization"},
+		AllowCredentials: true,
+		MaxAge:           time.Duration(viper.GetInt(util.ConfigPath(util.Token, "age"))),
 	}))
 
 	// init users storageUsers
@@ -74,7 +78,15 @@ func runApp() {
 }
 
 func ConfigureViper() {
-	viper.AddConfigPath("./config")
+	var path string
+
+	if strings.Compare(runtime.GOOS, "linux") == 0 {
+		path = "../config"
+	} else {
+		path = "./config"
+	}
+
+	viper.AddConfigPath(path)
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
 
